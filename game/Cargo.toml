@@ -1,0 +1,21 @@
+[package]
+name = "game"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+debug = 1
+
+[dependencies]
+cell_sim = { path = "../cell_sim" }
+bevy = { version = "0.12.1", features = ["dynamic_linking", "multi-threaded"] }
+rand = "0.8.5"
+

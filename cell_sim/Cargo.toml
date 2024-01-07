@@ -1,0 +1,30 @@
+[package]
+name = "cell_sim"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+debug = 1
+
+[package.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "physics"
+harness = false
+
+[dependencies]
+nalgebra = "0.32.3"
+rand = "0.8.5"
+# rapier2d parellel does not play well with a lot of cells (index out of bounds in interaction_groups).
+# Benchmarks show parellel is faster with # of cells that doesn't crash (100 cells)
+rapier2d = { version = "0.17.2", features = ["simd-stable"] }
