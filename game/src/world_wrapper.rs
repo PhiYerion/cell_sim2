@@ -76,10 +76,6 @@ pub fn update(
                 .get(rigid_body_handle)
                 .unwrap();
             let pos = rigid_body.position().translation.vector;
-            transform.translation = Vec3::new(
-                pos.x,
-                pos.y,
-                0.,
-            );
+            transform.translation = Vec3::new(pos.x, pos.y, 0.);
         });
 }
