@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cargo build
 ./target/debug/game &
 pid=$!
 echo "pid: $pid"
