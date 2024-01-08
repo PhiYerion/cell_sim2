@@ -38,8 +38,9 @@ impl World {
             }
             None => {
                 cell_wrapper.index = self.cells.len();
+                self.cells.push(cell_wrapper);
 
-                cell_wrapper.index
+                self.cells.len() - 1
             }
         }
     }
