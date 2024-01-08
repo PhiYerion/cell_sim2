@@ -16,6 +16,7 @@ debug = 1
 
 [dependencies]
 cell_sim = { path = "../cell_sim" }
-bevy = { version = "0.12.1", features = ["dynamic_linking", "multi-threaded"] }
+bevy = { version = "0.12.1", features = ["multi-threaded"] }
 rand = "0.8.5"
+nalgebra = "0.32.3"
 
