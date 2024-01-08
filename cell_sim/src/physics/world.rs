@@ -1,7 +1,8 @@
 use crate::cell::Cell;
+use crate::component::ComponentProps;
 use nalgebra::Vector2;
 use rapier2d::dynamics::{RigidBody, RigidBodyBuilder, RigidBodyHandle, RigidBodySet};
-use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet};
+use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet, SharedShape};
 
 use super::cell_wrapper::CellWrapper;
 use super::physics_props::PhysicsPropsStruct;
@@ -61,12 +62,19 @@ impl World {
         self.inject_cell(cell, collider_handle, rigid_body_handle)
     }
 
-    pub fn add_cell(&mut self, position: Vector2<f32>) -> usize {
-        const SIZE: f32 = 1.0;
-        let collider = ColliderBuilder::ball(SIZE).build();
+    pub fn add_cell(&mut self, cell: Cell, position: Vector2<f32>) -> usize {
+        let collider = ColliderBuilder::ball(cell.size).build();
         let rigid_body = RigidBodyBuilder::dynamic().translation(position).build();
 
-        self.inject_cell_bundle(Cell::default(), collider, rigid_body)
+        self.inject_cell_bundle(cell, collider, rigid_body)
+    }
+
+    pub fn inject_component(&mut self, cell_index: usize, component_index: usize, component: ComponentProps) {
+        let cell_wrapper = self.cells.get_mut(cell_index).unwrap();
+        cell_wrapper.inner.inject_component(component_index, component);
+        self.collider_set.get_mut(cell_wrapper.collider_handle).unwrap().set_shape(
+            SharedShape::ball(cell_wrapper.inner.size),
+            )
     }
 
     pub fn update(&mut self) {
@@ -79,7 +87,7 @@ impl World {
             .iter_mut()
             .zip(self.rigid_body_set.iter())
             .zip(self.collider_set.iter())
-            .for_each(|((cell, (_, rigid_body)), (_, collider))| {
+            .for_each(|((cell, (rigid_body_handle, rigid_body)), (collider_handle, collider))| {
                 cell.inner.run_components(rigid_body, collider);
             });
     }

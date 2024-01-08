@@ -5,6 +5,7 @@ pub mod physics;
 
 #[cfg(test)]
 mod tests {
+    use crate::cell::Cell;
     use crate::physics::World;
     use nalgebra::vector;
 
@@ -12,7 +13,7 @@ mod tests {
     fn full_test() {
         let mut world = World::default();
         (0..250).for_each(|_| {
-            world.add_cell(vector![rand::random(), rand::random()]);
+            world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
         });
 
         (0..250).for_each(|_| {

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::Mesh2dHandle;
+use cell_sim::cell::Cell;
 use cell_sim::physics::World;
 use nalgebra::vector;
 
@@ -13,12 +14,13 @@ pub struct WorldWrapper {
 impl WorldWrapper {
     pub fn add_cell(
         &mut self,
+        cell: Cell,
         pos: Vec2,
         commands: &mut Commands,
         meshes: &mut Assets<Mesh>,
         color_materials: &mut Assets<ColorMaterial>,
     ) {
-        let cell_idx = self.world.add_cell(vector![pos.x, pos.y]);
+        let cell_idx = self.world.add_cell(cell, vector![pos.x, pos.y]);
         let cell_bundle = CellBundle::new(meshes, color_materials, pos, cell_idx);
         commands.spawn(cell_bundle);
     }
@@ -31,7 +33,9 @@ pub fn thousand_cells(
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for _ in 0..1000 {
+        let random_cell = Cell::new_random();
         world_wrapper.add_cell(
+            random_cell,
             Vec2::new(rand::random::<f32>() * 1000., rand::random::<f32>() * 1200.),
             &mut commands,
             meshes.as_mut(),
@@ -61,7 +65,7 @@ pub fn update(
 
             // Mesh
             *mesh = meshes
-                .add(shape::Circle::new(10.).into())
+                .add(shape::Circle::new(cell.inner.size).into())
                 .into();
 
             // Translation

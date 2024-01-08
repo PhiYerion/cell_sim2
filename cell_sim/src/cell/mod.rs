@@ -3,6 +3,7 @@ use rapier2d::geometry::Collider;
 
 use crate::component::get_components;
 
+use self::chemicals::Chemicals;
 use self::inner::Inner;
 use self::membrane::Membrane;
 use super::component::{ComponentProps, COMPONENT_COUNT};
@@ -16,14 +17,49 @@ pub struct Cell {
     pub inner: Inner,
     pub membrane: Membrane,
     pub components: [Option<ComponentProps>; COMPONENT_COUNT],
+    pub size: f32,
 }
 
 impl Cell {
+    pub fn new(
+        inner: Inner,
+        membrane: Membrane,
+        components: [Option<ComponentProps>; COMPONENT_COUNT],
+    ) -> Self {
+        let mut size = inner.size() + membrane.size();
+        components.iter().flatten().for_each(|component| {
+            size += component.size;
+        });
+
+        Self {
+            inner,
+            membrane,
+            components,
+            size,
+        }
+    }
+
+    pub fn new_random() -> Self {
+        let inner = Inner {
+            chemicals: Chemicals {
+                atp: rand::random::<f32>() * 10.,
+            },
+            ph: rand::random::<f32>() * 10.,
+            test: rand::random::<f32>() * 10.,
+        };
+        let membrane = Membrane {};
+        let components = [None; COMPONENT_COUNT];
+
+        Self::new(inner, membrane, components)
+    }
+
     pub fn inject_component(&mut self, compoent_index: usize, component: ComponentProps) {
         self.components
             .get_mut(compoent_index)
             .unwrap()
             .replace(component);
+
+        self.size += component.size;
     }
 
     pub fn size(&self) -> f32 {

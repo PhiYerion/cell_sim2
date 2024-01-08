@@ -1,3 +1,4 @@
+use cell_sim::cell::Cell;
 use cell_sim::physics::World;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use nalgebra::vector;
@@ -18,7 +19,7 @@ fn test_cells(c: &mut Criterion, rounds: usize, cells: usize) {
         b.iter(|| {
             let mut world = World::default();
             (0..black_box(cells)).for_each(|_| {
-                world.add_cell(vector![rand::random(), rand::random()]);
+                world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
             });
 
             (0..black_box(rounds)).for_each(|_| {
@@ -34,7 +35,7 @@ fn test_physics(c: &mut Criterion, rounds: usize, cells: usize) {
         b.iter(|| {
             let mut world = World::default();
             (0..black_box(cells)).for_each(|_| {
-                world.add_cell(vector![rand::random(), rand::random()]);
+                world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
             });
 
             (0..black_box(rounds)).for_each(|_| {
@@ -50,7 +51,7 @@ fn test_all(c: &mut Criterion, rounds: usize, cells: usize) {
         b.iter(|| {
             let mut world = World::default();
             (0..black_box(cells)).for_each(|_| {
-                world.add_cell(vector![rand::random(), rand::random()]);
+                world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
             });
 
             (0..black_box(rounds)).for_each(|_| {
