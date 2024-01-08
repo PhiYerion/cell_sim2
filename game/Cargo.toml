@@ -16,7 +16,7 @@ debug = 1
 
 [dependencies]
 cell_sim = { path = "../cell_sim" }
-bevy = { version = "0.12.1", features = ["multi-threaded"] }
+bevy = { version = "0.12.1", default-features = false, features = ["multi-threaded", "bevy_render", "bevy_core_pipeline", "bevy_gizmos", "bevy_sprite", "x11"] }
 rand = "0.8.5"
 nalgebra = "0.32.3"
 
