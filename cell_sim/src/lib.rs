@@ -5,8 +5,8 @@ pub mod physics;
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::vector;
     use crate::physics::World;
+    use nalgebra::vector;
 
     #[test]
     fn full_test() {

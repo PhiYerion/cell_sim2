@@ -1,6 +1,6 @@
+mod cell_wrapper;
 mod physics_props;
 mod world;
-mod cell_wrapper;
 pub use world::World;
 
 #[cfg(test)]

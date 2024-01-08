@@ -20,7 +20,10 @@ pub struct Cell {
 
 impl Cell {
     pub fn inject_component(&mut self, compoent_index: usize, component: ComponentProps) {
-        self.components.get_mut(compoent_index).unwrap().replace(component);
+        self.components
+            .get_mut(compoent_index)
+            .unwrap()
+            .replace(component);
     }
 
     pub fn size(&self) -> f32 {
@@ -35,13 +38,13 @@ impl Cell {
     pub fn run_components(&mut self, rigid_body: &RigidBody, collider: &Collider) {
         let component_functions = get_components();
         let component_props = self.components;
-        component_props.iter().enumerate().for_each(|( idx, component_option )| {
-            match component_option {
+        component_props.iter().enumerate().for_each(
+            |(idx, component_option)| match component_option {
                 Some(component) => {
                     component_functions[idx](component, self, rigid_body, collider);
-                },
-                None => {},
-            }
-        })
+                }
+                None => {}
+            },
+        )
     }
 }

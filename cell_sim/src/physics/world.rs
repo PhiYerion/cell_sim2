@@ -3,8 +3,8 @@ use nalgebra::Vector2;
 use rapier2d::dynamics::{RigidBody, RigidBodyBuilder, RigidBodyHandle, RigidBodySet};
 use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet};
 
-use super::physics_props::PhysicsPropsStruct;
 use super::cell_wrapper::CellWrapper;
+use super::physics_props::PhysicsPropsStruct;
 
 #[derive(Default)]
 pub struct World {
@@ -44,7 +44,12 @@ impl World {
         }
     }
 
-    fn inject_cell_bundle(&mut self, cell: Cell, collider: Collider, rigid_body: RigidBody) -> usize {
+    fn inject_cell_bundle(
+        &mut self,
+        cell: Cell,
+        collider: Collider,
+        rigid_body: RigidBody,
+    ) -> usize {
         let rigid_body_handle = self.rigid_body_set.insert(rigid_body);
         let collider_handle = self.collider_set.insert_with_parent(
             collider,
