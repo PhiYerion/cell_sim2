@@ -1,13 +1,16 @@
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::prelude::*;
+use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use cell_sim::cell::Cell;
 
-use crate::cell_wrapper::CellWrapper;
+#[derive(Component)]
+struct CellId {
+    pub cell_id: usize,
+}
 
 #[derive(Bundle)]
 pub struct CellBundle {
     pub material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
-    pub cell: CellWrapper,
+    pub cell_id: CellId,
 }
 
 const CELL_SIZE_MODIFIER: f32 = 0.02;
@@ -16,19 +19,17 @@ impl CellBundle {
     pub fn new(
         meshes: &mut Assets<Mesh>,
         materials: &mut Assets<ColorMaterial>,
-        cell: Cell,
-        pos: Vec3,
+        pos: Vec2,
+        cell_id: usize,
     ) -> Self {
         Self {
             material_mesh_bundle: MaterialMesh2dBundle {
-                mesh: meshes
-                    .add(shape::Circle::new(3.).into())
-                    .into(),
+                mesh: meshes.add(shape::Circle::new(3.).into()).into(),
                 material: materials.add(ColorMaterial::from(Color::PURPLE)),
                 transform: Transform::from_xyz(pos.x, pos.y, 0.),
                 ..default()
             },
-            cell: CellWrapper { inner: cell },
+            cell_id: CellId { cell_id },
         }
     }
 }
