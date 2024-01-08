@@ -46,7 +46,7 @@ pub fn thousand_cells(
 
 pub fn update(
     mut world_wrapper: ResMut<WorldWrapper>,
-    time: Res<Time>,
+    _time: Res<Time>,
     mut cell_bundles: Query<(
         Entity,
         &CellId,
@@ -55,12 +55,12 @@ pub fn update(
         &mut Transform,
     )>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut _materials: ResMut<Assets<ColorMaterial>>,
 ) {
     world_wrapper.world.update();
     cell_bundles
         .iter_mut()
-        .for_each(|(entity, cell_id, mut mesh, mut color, mut transform)| {
+        .for_each(|(_entity, cell_id, mut mesh, mut _color, mut transform)| {
             let cell = world_wrapper.world.cells.get(cell_id.cell_id).unwrap();
 
             // Mesh

@@ -87,7 +87,7 @@ impl World {
             .iter_mut()
             .zip(self.rigid_body_set.iter())
             .zip(self.collider_set.iter())
-            .for_each(|((cell, (rigid_body_handle, rigid_body)), (collider_handle, collider))| {
+            .for_each(|((cell, (_, rigid_body)), (_, collider))| {
                 cell.inner.run_components(rigid_body, collider);
             });
     }

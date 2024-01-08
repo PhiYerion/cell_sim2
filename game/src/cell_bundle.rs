@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
-use cell_sim::cell::Cell;
+use bevy::sprite::MaterialMesh2dBundle;
 
 #[derive(Component, Clone, Copy, Debug)]
 pub struct CellId {
@@ -12,8 +11,6 @@ pub struct CellBundle {
     pub material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     pub cell_id: CellId,
 }
-
-const CELL_SIZE_MODIFIER: f32 = 0.02;
 
 impl CellBundle {
     pub fn new(
@@ -32,13 +29,4 @@ impl CellBundle {
             cell_id: CellId { cell_id },
         }
     }
-}
-
-pub fn update_cell_mesh(
-    cell: &mut Cell,
-    mesh: &mut Mesh2dHandle,
-    color: &mut Handle<ColorMaterial>,
-    mesh_assets: &mut ResMut<Assets<Mesh>>,
-    color_assets: &mut ResMut<Assets<ColorMaterial>>,
-) {
 }
