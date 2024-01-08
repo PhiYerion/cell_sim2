@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use cell_sim::cell::Cell;
 
-#[derive(Component)]
-struct CellId {
+#[derive(Component, Clone, Copy, Debug)]
+pub struct CellId {
     pub cell_id: usize,
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Clone)]
 pub struct CellBundle {
     pub material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     pub cell_id: CellId,
