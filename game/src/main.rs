@@ -23,25 +23,5 @@ fn main() {
                 world.thousand_cells(commands, meshes, color_materials)
             },
         )
-        .add_systems(Startup, test)
         .run();
-}
-
-fn test(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut color_materials: ResMut<Assets<ColorMaterial>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.single();
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(5.).into()).into(),
-        material: color_materials.add(ColorMaterial::from(Color::PURPLE)),
-        transform: Transform::from_translation(Vec3::new(
-            window.width() / 2.,
-            window.height() / 2.,
-            0.,
-        )),
-        ..default()
-    });
 }
