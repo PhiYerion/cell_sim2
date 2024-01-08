@@ -3,7 +3,6 @@
 cargo build
 ./target/debug/game &
 pid=$!
-echo "pid: $pid"
 perf record -gbz -p "$pid" --call-graph fp &
 sleep 30
 kill "$pid"
