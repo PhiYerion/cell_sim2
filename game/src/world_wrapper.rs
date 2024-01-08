@@ -30,7 +30,7 @@ pub fn thousand_cells(
     mut meshes: ResMut<Assets<Mesh>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         world_wrapper.add_cell(
             Vec2::new(rand::random::<f32>() * 1000., rand::random::<f32>() * 1200.),
             &mut commands,
@@ -48,6 +48,7 @@ pub fn update(
         &CellId,
         &mut Mesh2dHandle,
         &mut Handle<ColorMaterial>,
+        &mut Transform,
     )>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -55,10 +56,26 @@ pub fn update(
     world_wrapper.world.update();
     cell_bundles
         .iter_mut()
-        .for_each(|(entity, cell_id, mut mesh, mut color)| {
+        .for_each(|(entity, cell_id, mut mesh, mut color, mut transform)| {
             let cell = world_wrapper.world.cells.get(cell_id.cell_id).unwrap();
+
+            // Mesh
             *mesh = meshes
-                .add(shape::Circle::new(cell.inner.size() + rand::random::<f32>() * 10.).into())
+                .add(shape::Circle::new(10.).into())
                 .into();
+
+            // Translation
+            let rigid_body_handle = cell.rigid_body_handle;
+            let rigid_body = world_wrapper
+                .world
+                .rigid_body_set
+                .get(rigid_body_handle)
+                .unwrap();
+            let pos = rigid_body.position().translation.vector;
+            transform.translation = Vec3::new(
+                pos.x,
+                pos.y,
+                0.,
+            );
         });
 }
