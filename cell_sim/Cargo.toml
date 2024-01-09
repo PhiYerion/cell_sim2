@@ -1,3 +1,5 @@
+cargo-features = ["profile-rustflags"]
+
 [package]
 name = "cell_sim"
 version = "0.1.0"
@@ -12,8 +14,9 @@ debug = 1
 
 [package.release]
 opt-level = 3
-lto = "thin"
 codegen-units = 1
+lto = "thin"
+rustflags = ["-C", "target-cpu=native"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
@@ -26,5 +29,6 @@ harness = false
 nalgebra = "0.32.3"
 rand = "0.8.5"
 # rapier2d parellel does not play well with a lot of cells (index out of bounds in interaction_groups).
-# Benchmarks show parellel is faster with # of cells that doesn't crash (100 cells)
+# Benchmarks show that in whatever case parallel is not faster than sequential. With large number of cells,
+# it hangs on pretty massive theading overhead.
 rapier2d = { version = "0.17.2", features = ["simd-stable"] }
