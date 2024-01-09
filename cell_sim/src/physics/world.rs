@@ -69,12 +69,20 @@ impl World {
         self.inject_cell_bundle(cell, collider, rigid_body)
     }
 
-    pub fn inject_component(&mut self, cell_index: usize, component_index: usize, component: ComponentProps) {
+    pub fn inject_component(
+        &mut self,
+        cell_index: usize,
+        component_index: usize,
+        component: ComponentProps,
+    ) {
         let cell_wrapper = self.cells.get_mut(cell_index).unwrap();
-        cell_wrapper.inner.inject_component(component_index, component);
-        self.collider_set.get_mut(cell_wrapper.collider_handle).unwrap().set_shape(
-            SharedShape::ball(cell_wrapper.inner.size),
-            )
+        cell_wrapper
+            .inner
+            .inject_component(component_index, component);
+        self.collider_set
+            .get_mut(cell_wrapper.collider_handle)
+            .unwrap()
+            .set_shape(SharedShape::ball(cell_wrapper.inner.size))
     }
 
     pub fn update(&mut self) {

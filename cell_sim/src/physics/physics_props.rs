@@ -16,7 +16,7 @@ pub struct PhysicsPropsStruct {
 impl Default for PhysicsPropsStruct {
     fn default() -> PhysicsPropsStruct {
         Self {
-            gravity: vector![0.0, -9.81],
+            gravity: vector![0.0, 0.0],
             integration_parameters: IntegrationParameters::default(),
             physics_pipeline: PhysicsPipeline::new(),
             island_manager: IslandManager::new(),
