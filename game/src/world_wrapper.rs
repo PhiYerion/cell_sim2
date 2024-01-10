@@ -1,5 +1,3 @@
-use std::ops::SubAssign;
-
 use bevy::sprite::Mesh2dHandle;
 use bevy::{log, prelude::*};
 use cell_sim::cell::Cell;
@@ -68,10 +66,10 @@ pub fn update(
     mut meshes: ResMut<Assets<Mesh>>,
     mut _materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let start_time = std::time::Instant::now();        // For debug
+    let start_time = std::time::Instant::now(); // For debug
     world_wrapper.world.update();
 
-    let world_update_time = start_time.elapsed();      // For debug
+    let world_update_time = start_time.elapsed(); // For debug
     #[cfg(debug_assertions)]
     {
         world_wrapper.frames += 1;
@@ -87,7 +85,6 @@ pub fn update(
                 .rigid_body_set
                 .get(rigid_body_handle)
                 .unwrap();
-
 
             // Mesh
             if cell.inner.size_changed {
@@ -105,10 +102,7 @@ pub fn update(
 
     #[cfg(debug_assertions)]
     {
-        world_wrapper.bevy_update_time += start_time
-            .elapsed()
-            .checked_sub(world_update_time)
-            .unwrap_or_default();
+        world_wrapper.bevy_update_time += start_time.elapsed() - world_update_time;
         log::info!("world_wrapper::update times:\n\tworld update: {:?}/f\n\t\tcell update: {:?}/f, \n\t\tphysics_update: {:?}/f, \n\tbevy update: {:?}/f",
                    world_wrapper.world_update_time / world_wrapper.frames,
                        world_wrapper.world.cell_time / world_wrapper.frames,

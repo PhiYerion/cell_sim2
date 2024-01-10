@@ -18,8 +18,10 @@ pub struct World {
 
     free_indexes: Vec<usize>,
 
-    #[cfg(debug_assertions)] pub cell_time: Duration,
-    #[cfg(debug_assertions)] pub physics_time: Duration,
+    #[cfg(debug_assertions)]
+    pub cell_time: Duration,
+    #[cfg(debug_assertions)]
+    pub physics_time: Duration,
 }
 
 impl World {
@@ -94,12 +96,15 @@ impl World {
         let start = std::time::Instant::now();
 
         self.update_cells();
-        #[cfg(debug_assertions)] {
-            self.cell_time += start.elapsed();
+        let cell_time = start.elapsed();
+        #[cfg(debug_assertions)]
+        {
+            self.cell_time += cell_time;
         }
         self.update_physics();
-        #[cfg(debug_assertions)] {
-            self.physics_time += start.elapsed().checked_sub(self.cell_time).unwrap_or_default();
+        #[cfg(debug_assertions)]
+        {
+            self.physics_time += start.elapsed() - cell_time;
         }
     }
 
