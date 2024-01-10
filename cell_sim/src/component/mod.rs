@@ -1,3 +1,8 @@
+mod carbs_reducer;
+mod chlorophyll;
+mod glycolysis;
+mod nucleotide_de_novo;
+mod protein_de_novo;
 mod test_comp;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::Collider;
