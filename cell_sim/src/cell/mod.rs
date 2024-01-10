@@ -13,6 +13,7 @@ use self::membrane::Membrane;
 
 #[derive(Clone, Copy, Default)]
 pub struct Cell {
+    pub dead: bool,
     pub inner: Inner,
     pub membrane: Membrane,
     pub components: [Option<ComponentProps>; COMPONENT_COUNT],
@@ -34,6 +35,7 @@ impl Cell {
         });
 
         Self {
+            dead: false,
             inner,
             membrane,
             components,
@@ -108,10 +110,13 @@ impl Cell {
             .for_each(|(component_function, component_props_option)| 
                 match component_props_option {
                     Some(component_props) => {
-                            component_function(component_props, self);
+                        component_function(component_props, self);
                     }
                     None => {}
                 },
-            )
+            );
+        if self.inner.chemicals.atp <= 0. {
+            self.dead = true;
+        }
     }
 }

@@ -7,11 +7,12 @@ use super::cell_wrapper::CellWrapper;
 use super::physics_props::PhysicsPropsStruct;
 use super::world::CellChanges;
 
-pub fn update_cells(cells: &mut [CellWrapper]) -> Vec<CellChanges> {
+pub fn update_cells(cells: &mut [Option<CellWrapper>]) -> Vec<Option<CellChanges>> {
     let update = |cell: &mut CellWrapper| {
-        (0..300).for_each(|_| {
+        for _ in 0..300 {
+            if cell.inner.dead { return None }
             cell.inner.run_components();
-        });
+        }
         let impulse = match cell.inner.velocity_changed {
             true => {
                 let impulse = cell.inner.impulse;
@@ -27,18 +28,18 @@ pub fn update_cells(cells: &mut [CellWrapper]) -> Vec<CellChanges> {
             false => None,
         };
 
-        CellChanges {
+        Some(CellChanges {
             rigid_body_handle: cell.rigid_body_handle,
             collider_handle: cell.collider_handle,
             impulse,
             size,
-        }
+        })
     };
 
     #[cfg(feature = "parallel")]
-    let collection: Vec<CellChanges> = cells.par_iter_mut().map(update).collect();
+    let collection: Vec<Option<CellChanges>> = cells.par_iter_mut().flatten().map(update).collect();
     #[cfg(not(feature = "parallel"))]
-    let collection: Vec<CellChanges> = cells.iter_mut().map(update).collect();
+    let collection: Vec<Option<CellChanges>> = cells.iter_mut().flatten().map(update).collect();
 
     collection
 }

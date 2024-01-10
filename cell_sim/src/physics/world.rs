@@ -12,7 +12,7 @@ use super::physics_props::PhysicsPropsStruct;
 
 #[derive(Default)]
 pub struct World {
-    pub cells: Vec<CellWrapper>,
+    pub cells: Vec<Option<CellWrapper>>,
     pub rigid_body_set: RigidBodySet,
     pub collider_set: ColliderSet,
     pub physics_props: PhysicsPropsStruct,
@@ -50,13 +50,13 @@ impl World {
         match self.free_indexes.pop() {
             Some(index) => {
                 cell_wrapper.index = index;
-                self.cells.get_mut(index).replace(&mut cell_wrapper);
+                self.cells[index] = Some(cell_wrapper);
 
-                cell_wrapper.index
+                index
             }
             None => {
                 cell_wrapper.index = self.cells.len();
-                self.cells.push(cell_wrapper);
+                self.cells.push(Some(cell_wrapper));
 
                 self.cells.len() - 1
             }
@@ -86,24 +86,31 @@ impl World {
         self.inject_cell_bundle(cell, collider, rigid_body)
     }
 
+    pub fn remove_cell(&mut self, cell_idx: usize) {
+        self.cells[cell_idx] = None;
+        self.free_indexes.push(cell_idx)
+    }
+
     pub fn inject_component(
         &mut self,
         cell_index: usize,
         component_index: usize,
         component: ComponentProps,
     ) {
-        let cell_wrapper = self.cells.get_mut(cell_index).unwrap();
-        cell_wrapper
-            .inner
-            .inject_component(component_index, component);
-        self.collider_set
-            .get_mut(cell_wrapper.collider_handle)
-            .unwrap()
-            .set_shape(SharedShape::ball(cell_wrapper.inner.size()))
+        let cell_wrapper_option = self.cells.get_mut(cell_index).unwrap();
+        if let Some(cell_wrapper) = cell_wrapper_option {
+            cell_wrapper
+                .inner
+                .inject_component(component_index, component);
+            self.collider_set
+                .get_mut(cell_wrapper.collider_handle)
+                .unwrap()
+                .set_shape(SharedShape::ball(cell_wrapper.inner.size()))
+        }
     }
 
     pub fn update(&mut self) {
-        let mut cell_changes: Vec<CellChanges> = Vec::with_capacity(self.cells.len());
+        let mut cell_changes: Vec<Option<CellChanges>> = Vec::with_capacity(self.cells.len());
         #[cfg(feature = "parallel")]
         {
             let mut update_cells_time = Duration::default();
@@ -111,7 +118,7 @@ impl World {
             rayon::join(
                 || {
                     let start_time = std::time::Instant::now();
-                    cell_changes = update_cells(self.cells.as_mut_slice());
+                    cell_changes = update_cells(&mut self.cells);
                     update_cells_time = start_time.elapsed();
                 },
                 || {
@@ -133,14 +140,21 @@ impl World {
         }
 
         let start_time = std::time::Instant::now();
-        cell_changes.iter().for_each(|change| {
-            if let Some(impulse) = change.impulse {
-                let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
-                rigid_body.apply_impulse(impulse * 100., true);
-            }
-            if let Some(size) = change.size {
-                let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
-                collider.set_shape(SharedShape::ball(size));
+        cell_changes.iter().enumerate().for_each(|( idx, change_option )| {
+            match change_option {
+                Some(change) => {
+                    if let Some(impulse) = change.impulse {
+                        let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
+                        rigid_body.apply_impulse(impulse * 100., true);
+                    }
+                    if let Some(size) = change.size {
+                        let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
+                        collider.set_shape(SharedShape::ball(size));
+                    }
+                }
+                None => {
+                    self.remove_cell(idx);
+                }
             }
         });
         #[cfg(debug_assertions)] {

@@ -61,6 +61,7 @@ pub fn thousand_cells(
 }
 
 pub fn update(
+    mut commands: Commands,
     mut world_wrapper: ResMut<WorldWrapper>,
     _time: Res<Time>,
     mut cell_bundles: Query<(
@@ -87,40 +88,47 @@ pub fn update(
         .iter_mut()
         .filter(|(_, _, visibility, _, _, _)| visibility.get())
         .for_each(
-            |(_entity, cell_id, _visibiliy, mut mesh, mut _color, mut transform)| {
+            |(entity, cell_id, _visibiliy, mut mesh, mut _color, mut transform)| {
                 let start_time = std::time::Instant::now();
 
-                let cell = world_wrapper.world.cells.get(cell_id.cell_id).unwrap();
-                let rigid_body_handle = cell.rigid_body_handle;
-                let rigid_body = world_wrapper
-                    .world
-                    .rigid_body_set
-                    .get(rigid_body_handle)
-                    .unwrap();
+                let cell_option = world_wrapper.world.cells.get(cell_id.cell_id).unwrap();
+                match cell_option {
+                    Some(cell) => {
+                        let rigid_body_handle = cell.rigid_body_handle;
+                        let rigid_body = world_wrapper
+                            .world
+                            .rigid_body_set
+                            .get(rigid_body_handle)
+                            .unwrap();
 
-                let find_body_time = start_time.elapsed();
+                        let find_body_time = start_time.elapsed();
 
-                // Mesh
-                if cell.inner.size_changed {
-                    *mesh = meshes
-                        .add(shape::Circle::new(cell.inner.size()).into())
-                        .into();
-                }
+                        // Mesh
+                        if cell.inner.size_changed {
+                            *mesh = meshes
+                                .add(shape::Circle::new(cell.inner.size()).into())
+                                .into();
+                        }
 
-                let update_mesh_time = start_time.elapsed() - find_body_time;
+                        let update_mesh_time = start_time.elapsed() - find_body_time;
 
-                // Translation
-                if rigid_body.is_moving() {
-                    let pos = rigid_body.position().translation.vector;
-                    transform.translation = Vec3::new(pos.x, pos.y, 0.);
-                }
+                        // Translation
+                        if rigid_body.is_moving() {
+                            let pos = rigid_body.position().translation.vector;
+                            transform.translation = Vec3::new(pos.x, pos.y, 0.);
+                        }
 
-                #[cfg(debug_assertions)]
-                {
-                    world_wrapper.debug.bevy_find_rigid_body_time += find_body_time;
-                    world_wrapper.debug.bevy_update_mesh_time += update_mesh_time;
-                    world_wrapper.debug.bevy_update_transform_time +=
-                        start_time.elapsed() - find_body_time - update_mesh_time;
+                        #[cfg(debug_assertions)]
+                        {
+                            world_wrapper.debug.bevy_find_rigid_body_time += find_body_time;
+                            world_wrapper.debug.bevy_update_mesh_time += update_mesh_time;
+                            world_wrapper.debug.bevy_update_transform_time +=
+                                start_time.elapsed() - find_body_time - update_mesh_time;
+                        }
+                    },
+                    None => {
+                        commands.entity(entity).despawn();
+                    }
                 }
             },
         );
