@@ -17,21 +17,17 @@ pub fn move_camera(
     mut mouse_wheel: ResMut<Events<MouseWheel>>,
 ) {
     let mut transform = query.single_mut();
-
-    if keyboard_input.pressed(KeyCode::W) {
-        transform.translation.y += 10.;
-    }
-    if keyboard_input.pressed(KeyCode::S) {
-        transform.translation.y -= 10.;
-    }
-    if keyboard_input.pressed(KeyCode::A) {
-        transform.translation.x -= 10.;
-    }
-    if keyboard_input.pressed(KeyCode::D) {
-        transform.translation.x += 10.;
-    }
+    keyboard_input.get_pressed().for_each(|key| {
+        match key {
+            KeyCode::W => transform.translation.y += 10.,
+            KeyCode::S => transform.translation.y -= 10.,
+            KeyCode::A => transform.translation.x -= 10.,
+            KeyCode::D => transform.translation.x += 10.,
+            _ => (),
+        }
+    });
 
     mouse_wheel.drain().for_each(|e| {
-        transform.scale += -e.y * 0.01;
+        transform.scale += -e.y * 0.05;
     });
 }
