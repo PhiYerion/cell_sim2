@@ -3,7 +3,6 @@ mod flangella;
 mod glycolysis;
 mod nucleotide_de_novo;
 mod protein_de_novo;
-mod test_comp;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::Collider;
 
@@ -12,7 +11,6 @@ use crate::cell::Cell;
 
 use super::inner::PROTEIN_SIZE;
 
-pub const COMPONENT_COUNT: usize = 6;
 
 pub type Component = fn(&ComponentProps, &mut Cell, &RigidBody, &Collider);
 
@@ -37,7 +35,7 @@ impl ComponentProps {
     }
 
     pub fn random() -> Self {
-        Self::new(rand::random::<f32>() * 10., rand::random::<f32>())
+        Self::new(rand::random::<f32>() * 1000., rand::random::<f32>())
     }
 
     pub fn get_input_output_amt(&self, constraint: f32) -> Amounts {
@@ -68,9 +66,9 @@ fn get_efficiency(speed: f32, proteins: f32) -> f32 {
     1. / (1. + speed / proteins)
 }
 
+pub const COMPONENT_COUNT: usize = 5;
 pub fn get_components() -> [Component; COMPONENT_COUNT] {
     [
-        test_comp::test_comp,
         flangella::flangella,
         chlorophyll::chlorophyll,
         glycolysis::glycolysis,

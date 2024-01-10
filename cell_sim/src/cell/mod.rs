@@ -53,7 +53,8 @@ impl Cell {
     }
 
     pub fn size(&self) -> f32 {
-        self.size * 0.1
+        debug_assert!(self.size >= 0.);
+        self.size * 0.001
     }
 
     pub fn set_velocity(&mut self, vel: Vector2<f32>) {
@@ -110,7 +111,7 @@ impl Cell {
             .for_each(|(component_function, component_props_option)| 
                 match component_props_option {
                     Some(component_props) => {
-                        component_function(component_props, self, rigid_body, collider);
+                            component_function(component_props, self, rigid_body, collider);
                     }
                     None => {}
                 },

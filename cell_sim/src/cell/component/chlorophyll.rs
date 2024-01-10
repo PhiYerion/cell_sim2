@@ -1,7 +1,7 @@
 use rapier2d::prelude::*;
 
-use crate::cell::Cell;
 use crate::cell::chemicals::GLUCOSE_SIZE;
+use crate::cell::Cell;
 
 use super::ComponentProps;
 

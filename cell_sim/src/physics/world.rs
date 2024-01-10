@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use crate::cell::Cell;
 use crate::cell::component::ComponentProps;
+use crate::cell::Cell;
 use nalgebra::Vector2;
 use rapier2d::dynamics::{RigidBody, RigidBodyBuilder, RigidBodyHandle, RigidBodySet};
 use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet, SharedShape};
@@ -109,13 +109,12 @@ impl World {
     }
 
     pub fn update_cells(&mut self) {
-        self.cells
-            .iter_mut()
-            .zip(self.rigid_body_set.iter())
-            .zip(self.collider_set.iter())
-            .for_each(|((cell, (_, rigid_body)), (_, collider))| {
-                cell.inner.run_components(rigid_body, collider);
-            });
+        self.cells.iter_mut().for_each(|cell| {
+            let rigid_body = self.rigid_body_set.get_mut(cell.rigid_body_handle).unwrap();
+            let collider = self.collider_set.get_mut(cell.collider_handle).unwrap();
+            cell.inner.run_components(rigid_body, collider);
+            collider.set_shape(SharedShape::ball(cell.inner.size()));
+        });
     }
 
     pub fn update_physics(&mut self) {

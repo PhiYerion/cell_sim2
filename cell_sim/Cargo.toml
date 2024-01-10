@@ -11,6 +11,8 @@ name = "physics"
 harness = false
 
 [dependencies]
+env_logger = "0.10.1"
+log = "0.4.20"
 nalgebra = "0.32.3"
 rand = { version = "0.8.5", features = ["small_rng"] }
 # rapier2d parellel does not play well with a lot of cells (index out of bounds in interaction_groups).
