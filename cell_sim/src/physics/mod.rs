@@ -1,6 +1,7 @@
 mod cell_wrapper;
 mod physics_props;
 mod world;
+mod updates;
 pub use world::World;
 
 #[cfg(test)]
@@ -10,6 +11,7 @@ mod tests {
     use crate::cell::Cell;
 
     use super::World;
+    use super::updates::{update_physics, update_cells};
 
     #[test]
     fn test_phsyics() {
@@ -19,7 +21,7 @@ mod tests {
         });
 
         (0..250).for_each(|_| {
-            World::update_physics(
+            update_physics(
                 &mut world.physics_props,
                 &mut world.rigid_body_set,
                 &mut world.collider_set,
@@ -35,7 +37,7 @@ mod tests {
         });
 
         (0..250).for_each(|_| {
-            World::update_cells(&mut world.cells);
+            update_cells(&mut world.cells);
         })
     }
 }

@@ -4,13 +4,13 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use nalgebra::vector;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    /* test_physics(c, 256, 64);
+    test_physics(c, 256, 64);
     test_cells(c, 256, 64);
 
     test_physics(c, 64, 256);
-    test_cells(c, 64, 256); */
+    test_cells(c, 64, 256);
 
-    test_all(c, 256, 1024);
+    test_all(c, 128, 512);
 }
 
 fn test_all(c: &mut Criterion, rounds: usize, cells: usize) {
@@ -63,6 +63,8 @@ fn test_physics(c: &mut Criterion, rounds: usize, cells: usize) {
             })
         })
     });
+}
+
 }
 
 criterion_group!(benches, criterion_benchmark);
