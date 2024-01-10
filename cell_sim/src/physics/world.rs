@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::cell::Cell;
-use crate::component::ComponentProps;
+use crate::cell::component::ComponentProps;
 use nalgebra::Vector2;
 use rapier2d::dynamics::{RigidBody, RigidBodyBuilder, RigidBodyHandle, RigidBodySet};
 use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet, SharedShape};

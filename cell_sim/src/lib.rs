@@ -1,7 +1,7 @@
 pub mod cell;
-pub mod component;
-pub mod genetics;
 pub mod physics;
+
+pub const STEP_SIZE: f32 = 0.01;
 
 #[cfg(test)]
 mod tests {
