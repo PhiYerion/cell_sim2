@@ -87,13 +87,16 @@ impl Cell {
     pub fn run_components(&mut self, rigid_body: &RigidBody, collider: &Collider) {
         let component_functions = get_components();
         let component_props = self.components;
-        component_props.iter().enumerate().for_each(
-            |(idx, component_option)| match component_option {
-                Some(component) => {
-                    component_functions[idx](component, self, rigid_body, collider);
-                }
-                None => {}
-            },
-        )
+        component_functions
+            .iter()
+            .zip(component_props.iter())
+            .for_each(
+                |(component_function, component_option)| match component_option {
+                    Some(component) => {
+                        component_function(component, self, rigid_body, collider);
+                    }
+                    None => {}
+                },
+            )
     }
 }
