@@ -10,10 +10,16 @@ use crate::cell_bundle::{CellBundle, CellId};
 pub struct WorldWrapper {
     pub world: World,
     #[cfg(debug_assertions)]
+    debug: Debug,
+}
+
+#[derive(Default)]
+struct Debug {
     pub world_update_time: std::time::Duration,
-    #[cfg(debug_assertions)]
     pub bevy_update_time: std::time::Duration,
-    #[cfg(debug_assertions)]
+    pub bevy_find_rigid_body_time: std::time::Duration,
+    pub bevy_update_mesh_time: std::time::Duration,
+    pub bevy_update_transform_time: std::time::Duration,
     pub frames: u32,
 }
 
@@ -59,6 +65,7 @@ pub fn update(
     mut cell_bundles: Query<(
         Entity,
         &CellId,
+        &ViewVisibility,
         &mut Mesh2dHandle,
         &mut Handle<ColorMaterial>,
         &mut Transform,
@@ -72,12 +79,15 @@ pub fn update(
     let world_update_time = start_time.elapsed(); // For debug
     #[cfg(debug_assertions)]
     {
-        world_wrapper.frames += 1;
-        world_wrapper.world_update_time += world_update_time;
+        world_wrapper.debug.frames += 1;
+        world_wrapper.debug.world_update_time += world_update_time;
     }
     cell_bundles
         .iter_mut()
-        .for_each(|(_entity, cell_id, mut mesh, mut _color, mut transform)| {
+        .filter(|(_, _, visibility, _, _, _)| visibility.get())
+        .for_each(|(_entity, cell_id, _visibiliy, mut mesh, mut _color, mut transform)| {
+            let start_time = std::time::Instant::now();
+
             let cell = world_wrapper.world.cells.get(cell_id.cell_id).unwrap();
             let rigid_body_handle = cell.rigid_body_handle;
             let rigid_body = world_wrapper
@@ -86,6 +96,8 @@ pub fn update(
                 .get(rigid_body_handle)
                 .unwrap();
 
+            let find_body_time = start_time.elapsed();
+
             // Mesh
             if cell.inner.size_changed {
                 *mesh = meshes
@@ -93,21 +105,41 @@ pub fn update(
                     .into();
             }
 
+            let update_mesh_time = start_time.elapsed() - find_body_time;
+
             // Translation
             if rigid_body.is_moving() {
                 let pos = rigid_body.position().translation.vector;
                 transform.translation = Vec3::new(pos.x, pos.y, 0.);
             }
+
+            #[cfg(debug_assertions)]
+            {
+                world_wrapper.debug.bevy_find_rigid_body_time += find_body_time;
+                world_wrapper.debug.bevy_update_mesh_time += update_mesh_time;
+                world_wrapper.debug.bevy_update_transform_time += start_time.elapsed()
+                    - find_body_time
+                    - update_mesh_time;
+            }
+
         });
 
     #[cfg(debug_assertions)]
     {
-        world_wrapper.bevy_update_time += start_time.elapsed() - world_update_time;
-        log::info!("world_wrapper::update times:\n\tworld update: {:?}/f\n\t\tcell update: {:?}/f, \n\t\tphysics_update: {:?}/f, \n\tbevy update: {:?}/f",
-                   world_wrapper.world_update_time / world_wrapper.frames,
-                       world_wrapper.world.cell_time / world_wrapper.frames,
-                       world_wrapper.world.physics_time / world_wrapper.frames,
-                   world_wrapper.bevy_update_time / world_wrapper.frames);
+        world_wrapper.debug.bevy_update_time += start_time.elapsed() - world_update_time;
+        let debug_data = &world_wrapper.debug;
+        let world = &world_wrapper.world;
+        let total_per_frame = (debug_data.world_update_time + debug_data.bevy_update_time) / debug_data.frames;
+        log::info!("world_wrapper::update times:\nTotal {:?}/f (est {:?} fps) \n\tworld update: {:?}/f\n\t\tcell update: {:?}/f, \n\t\tphysics_update: {:?}/f, \n\tbevy update: {:?}/f, \n\t\tfinding rigid body: {:?} \n\t\tupdating mesh: {:?} \n\t\tupdating transform: {:?}",
+                   total_per_frame,
+                   1000. / total_per_frame.as_millis() as f32,
+                   debug_data.world_update_time / debug_data.frames,
+                       world.cell_time / debug_data.frames,
+                       world.physics_time / debug_data.frames,
+                   debug_data.bevy_update_time / debug_data.frames,
+                       debug_data.bevy_find_rigid_body_time / debug_data.frames,
+                       debug_data.bevy_update_mesh_time / debug_data.frames,
+                       debug_data.bevy_update_transform_time / debug_data.frames);
     }
 }
 
