@@ -17,11 +17,12 @@ impl CellBundle {
         meshes: &mut Assets<Mesh>,
         materials: &mut Assets<ColorMaterial>,
         pos: Vec2,
+        size: f32,
         cell_id: usize,
     ) -> Self {
         Self {
             material_mesh_bundle: MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(3.).into()).into(),
+                mesh: meshes.add(shape::Circle::new(size).into()).into(),
                 material: materials.add(ColorMaterial::from(Color::PURPLE)),
                 transform: Transform::from_xyz(pos.x, pos.y, 0.),
                 ..default()

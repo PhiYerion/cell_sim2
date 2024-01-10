@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::cell::Cell;
 use crate::component::ComponentProps;
 use nalgebra::Vector2;
@@ -15,6 +17,9 @@ pub struct World {
     pub physics_props: PhysicsPropsStruct,
 
     free_indexes: Vec<usize>,
+
+    #[cfg(debug_assertions)] pub cell_time: Duration,
+    #[cfg(debug_assertions)] pub physics_time: Duration,
 }
 
 impl World {
@@ -63,7 +68,7 @@ impl World {
     }
 
     pub fn add_cell(&mut self, cell: Cell, position: Vector2<f32>) -> usize {
-        let collider = ColliderBuilder::ball(cell.size).build();
+        let collider = ColliderBuilder::ball(cell.size()).build();
         let rigid_body = RigidBodyBuilder::dynamic().translation(position).build();
 
         self.inject_cell_bundle(cell, collider, rigid_body)
@@ -82,12 +87,20 @@ impl World {
         self.collider_set
             .get_mut(cell_wrapper.collider_handle)
             .unwrap()
-            .set_shape(SharedShape::ball(cell_wrapper.inner.size))
+            .set_shape(SharedShape::ball(cell_wrapper.inner.size()))
     }
 
     pub fn update(&mut self) {
+        let start = std::time::Instant::now();
+
         self.update_cells();
+        #[cfg(debug_assertions)] {
+            self.cell_time += start.elapsed();
+        }
         self.update_physics();
+        #[cfg(debug_assertions)] {
+            self.physics_time += start.elapsed().checked_sub(self.cell_time).unwrap_or_default();
+        }
     }
 
     pub fn update_cells(&mut self) {

@@ -17,7 +17,8 @@ pub struct Cell {
     pub inner: Inner,
     pub membrane: Membrane,
     pub components: [Option<ComponentProps>; COMPONENT_COUNT],
-    pub size: f32,
+    size: f32,
+    pub size_changed: bool,
 }
 
 impl Cell {
@@ -36,7 +37,18 @@ impl Cell {
             membrane,
             components,
             size,
+            size_changed: false,
         }
+    }
+
+    #[inline]
+    pub fn set_size(&mut self, size: f32) {
+        self.size = size
+    }
+
+    #[inline]
+    pub fn size(&self) -> f32 {
+        self.size
     }
 
     pub fn new_random() -> Self {
@@ -60,9 +72,10 @@ impl Cell {
             .replace(component);
 
         self.size += component.size;
+        self.size_changed = true;
     }
 
-    pub fn size(&self) -> f32 {
+    pub fn generate_size(&self) -> f32 {
         let mut size = 0.0;
         self.components.iter().flatten().for_each(|component| {
             size += component.size;
