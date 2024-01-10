@@ -4,13 +4,29 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use nalgebra::vector;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    test_physics(c, 256, 64);
+    /* test_physics(c, 256, 64);
     test_cells(c, 256, 64);
 
     test_physics(c, 64, 256);
-    test_cells(c, 64, 256);
+    test_cells(c, 64, 256); */
 
-    test_all(c, 1024, 64);
+    test_all(c, 256, 1024);
+}
+
+fn test_all(c: &mut Criterion, rounds: usize, cells: usize) {
+    let string = format!("all x{} cells x{} rounds", cells, rounds);
+    c.bench_function(string.as_str(), |b| {
+        b.iter(|| {
+            let mut world = World::default();
+            (0..black_box(cells)).for_each(|_| {
+                world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
+            });
+
+            (0..black_box(rounds)).for_each(|_| {
+                world.update();
+            })
+        })
+    });
 }
 
 fn test_cells(c: &mut Criterion, rounds: usize, cells: usize) {
@@ -23,7 +39,7 @@ fn test_cells(c: &mut Criterion, rounds: usize, cells: usize) {
             });
 
             (0..black_box(rounds)).for_each(|_| {
-                world.update_cells();
+                World::update_cells(&mut world.cells);
             })
         })
     });
@@ -39,23 +55,11 @@ fn test_physics(c: &mut Criterion, rounds: usize, cells: usize) {
             });
 
             (0..black_box(rounds)).for_each(|_| {
-                world.update_physics();
-            })
-        })
-    });
-}
-
-fn test_all(c: &mut Criterion, rounds: usize, cells: usize) {
-    let string = format!("all x{} cells x{} rounds", cells, rounds);
-    c.bench_function(string.as_str(), |b| {
-        b.iter(|| {
-            let mut world = World::default();
-            (0..black_box(cells)).for_each(|_| {
-                world.add_cell(Cell::new_random(), vector![rand::random(), rand::random()]);
-            });
-
-            (0..black_box(rounds)).for_each(|_| {
-                world.update();
+                World::update_physics(
+                    &mut world.physics_props,
+                    &mut world.rigid_body_set,
+                    &mut world.collider_set,
+                );
             })
         })
     });

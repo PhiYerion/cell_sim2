@@ -6,13 +6,12 @@ mod protein_de_novo;
 use rapier2d::dynamics::RigidBody;
 use rapier2d::geometry::Collider;
 
-use crate::STEP_SIZE;
 use crate::cell::Cell;
+use crate::STEP_SIZE;
 
 use super::inner::PROTEIN_SIZE;
 
-
-pub type Component = fn(&ComponentProps, &mut Cell, &RigidBody, &Collider);
+pub type Component = fn(&ComponentProps, &mut Cell);
 
 #[derive(Debug, Clone, Copy)]
 pub struct ComponentProps {
@@ -39,7 +38,7 @@ impl ComponentProps {
     }
 
     pub fn get_input_output_amt(&self, constraint: f32) -> Amounts {
-        let input = ( STEP_SIZE * self.speed ).min(constraint);
+        let input = (STEP_SIZE * self.speed).min(constraint);
         Amounts {
             input,
             output: input * self.efficiency,

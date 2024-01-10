@@ -20,7 +20,7 @@ pub struct Cell {
     pub membrane: Membrane,
     pub components: [Option<ComponentProps>; COMPONENT_COUNT],
     size: f32,
-    vel: Vector2<f32>,
+    pub vel: Vector2<f32>,
     pub size_changed: bool,
     pub velocity_changed: bool,
 }
@@ -102,7 +102,7 @@ impl Cell {
     }
 
     #[rustfmt::skip]
-    pub fn run_components(&mut self, rigid_body: &RigidBody, collider: &Collider) {
+    pub fn run_components(&mut self) {
         let component_functions = get_components();
         let component_props = self.components;
         component_functions
@@ -111,7 +111,7 @@ impl Cell {
             .for_each(|(component_function, component_props_option)| 
                 match component_props_option {
                     Some(component_props) => {
-                            component_function(component_props, self, rigid_body, collider);
+                            component_function(component_props, self);
                     }
                     None => {}
                 },

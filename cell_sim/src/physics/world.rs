@@ -22,6 +22,15 @@ pub struct World {
     pub cell_time: Duration,
     #[cfg(debug_assertions)]
     pub physics_time: Duration,
+    #[cfg(debug_assertions)]
+    pub replication_time: Duration,
+}
+
+pub struct CellChanges {
+    rigid_body_handle: RigidBodyHandle,
+    collider_handle: ColliderHandle,
+    velocity: Option<Vector2<f32>>,
+    size: Option<f32>,
 }
 
 impl World {
@@ -93,40 +102,98 @@ impl World {
     }
 
     pub fn update(&mut self) {
-        let start = std::time::Instant::now();
+        #[cfg(feature = "parallel")]
+        {
+            let mut cell_changes: Vec<CellChanges> = Vec::with_capacity(self.cells.len());
+            let mut update_cells_time = Duration::default();
+            let mut update_physics_time = Duration::default();
+            rayon::join(
+                || {
+                    let start_time = std::time::Instant::now();
+                    cell_changes = World::update_cells(self.cells.as_mut_slice());
+                    update_cells_time = start_time.elapsed();
+                },
+                || {
+                    let start_time = std::time::Instant::now();
+                    World::update_physics(&mut self.physics_props, &mut self.rigid_body_set, &mut self.collider_set);
+                    update_physics_time = start_time.elapsed();
+                }
+            );
 
-        self.update_cells();
-        let cell_time = start.elapsed();
-        #[cfg(debug_assertions)]
-        {
-            self.cell_time += cell_time;
+            let start_time = std::time::Instant::now();
+            cell_changes.iter().for_each(|change| {
+                if let Some(velocity) = change.velocity {
+                    let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
+                    rigid_body.set_linvel(velocity, true);
+                }
+                if let Some(size) = change.size {
+                    let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
+                    collider.set_shape(SharedShape::ball(size));
+                }
+            });
+            #[cfg(debug_assertions)] {
+                self.replication_time = start_time.elapsed();
+                self.cell_time = update_cells_time;
+                self.physics_time = update_physics_time;
+            }
         }
-        self.update_physics();
-        #[cfg(debug_assertions)]
-        {
-            self.physics_time += start.elapsed() - cell_time;
+        #[cfg(not(feature = "parallel"))] {
+            let cell_changes = World::update_cells(self.cells.as_mut_slice());
+            cell_changes.iter().for_each(|change| {
+                if let Some(velocity) = change.velocity {
+                    let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
+                    rigid_body.set_linvel(velocity, true);
+                }
+                if let Some(size) = change.size {
+                    let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
+                    collider.set_shape(SharedShape::ball(size));
+                }
+            });
+            World::update_physics(&mut self.physics_props, &mut self.rigid_body_set, &mut self.collider_set);
         }
     }
 
-    pub fn update_cells(&mut self) {
-        self.cells.iter_mut().for_each(|cell| {
-            let rigid_body = self.rigid_body_set.get_mut(cell.rigid_body_handle).unwrap();
-            let collider = self.collider_set.get_mut(cell.collider_handle).unwrap();
-            cell.inner.run_components(rigid_body, collider);
-            collider.set_shape(SharedShape::ball(cell.inner.size()));
-        });
+    pub fn update_cells(cells: &mut [CellWrapper]) -> Vec<CellChanges> {
+        let collection: Vec<CellChanges> = cells.iter_mut().map(|cell| {
+            (0..20).for_each(|_| {
+                cell.inner.run_components();
+            });
+            //collider.set_shape(SharedShape::ball(cell.inner.size()));
+            let velocity = match cell.inner.velocity_changed {
+                true => {
+                    cell.inner.velocity_changed = false;
+                    Some(cell.inner.vel)
+                }
+                false => None,
+            };
+            let size = match cell.inner.size_changed {
+                true => {
+                    cell.inner.size_changed = false;
+                    Some(cell.inner.size())
+                }
+                false => None,
+            };
+
+            CellChanges {
+                rigid_body_handle: cell.rigid_body_handle,
+                collider_handle: cell.collider_handle,
+                velocity,
+                size,
+            }
+        }).collect();
+
+        collection
     }
 
-    pub fn update_physics(&mut self) {
-        let physics_props = &mut self.physics_props;
+    pub fn update_physics(physics_props: &mut PhysicsPropsStruct, rigid_body_set: &mut RigidBodySet, collider_set: &mut ColliderSet) {
         physics_props.physics_pipeline.step(
             &physics_props.gravity,
             &physics_props.integration_parameters,
             &mut physics_props.island_manager,
             &mut physics_props.broad_phase,
             &mut physics_props.narrow_phase,
-            &mut self.rigid_body_set,
-            &mut self.collider_set,
+            rigid_body_set,
+            collider_set,
             &mut physics_props.impulse_joint_set,
             &mut physics_props.multibody_joint_set,
             &mut physics_props.ccd_solver,

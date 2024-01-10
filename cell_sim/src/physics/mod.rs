@@ -19,7 +19,11 @@ mod tests {
         });
 
         (0..250).for_each(|_| {
-            world.update_physics();
+            World::update_physics(
+                &mut world.physics_props,
+                &mut world.rigid_body_set,
+                &mut world.collider_set,
+            );
         })
     }
 
@@ -31,7 +35,7 @@ mod tests {
         });
 
         (0..250).for_each(|_| {
-            world.update_cells();
+            World::update_cells(&mut world.cells);
         })
     }
 }

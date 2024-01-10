@@ -131,12 +131,13 @@ pub fn update(
         let world = &world_wrapper.world;
         let total_per_frame =
             (debug_data.world_update_time + debug_data.bevy_update_time) / debug_data.frames;
-        log::info!("world_wrapper::update times:\nTotal {:?}/f (est {:?} fps) \n\tworld update: {:?}/f\n\t\tcell update: {:?}/f, \n\t\tphysics_update: {:?}/f, \n\tbevy update: {:?}/f, \n\t\tfinding rigid body: {:?} \n\t\tupdating mesh: {:?} \n\t\tupdating transform: {:?}",
+        log::info!("world_wrapper::update times:\nTotal {:?}/f (est {:?} fps) \n\tworld update: {:?}/f\n\t\tcell update: {:?}/f, \n\t\tphysics_update: {:?}/f, \n\t\treplicate_cell_to_rapier: {:?}/f, \n\tbevy update: {:?}/f, \n\t\tfinding rigid body: {:?} \n\t\tupdating mesh: {:?} \n\t\tupdating transform: {:?}",
                    total_per_frame,
                    1000. / total_per_frame.as_millis() as f32,
                    debug_data.world_update_time / debug_data.frames,
                        world.cell_time / debug_data.frames,
                        world.physics_time / debug_data.frames,
+                       world.replication_time / debug_data.frames,
                    debug_data.bevy_update_time / debug_data.frames,
                        debug_data.bevy_find_rigid_body_time / debug_data.frames,
                        debug_data.bevy_update_mesh_time / debug_data.frames,

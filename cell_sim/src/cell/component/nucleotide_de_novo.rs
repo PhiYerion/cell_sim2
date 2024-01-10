@@ -6,7 +6,7 @@ use crate::cell::Cell;
 
 use super::ComponentProps;
 
-pub fn nucleotide_de_novo(props: &ComponentProps, cell: &mut Cell, _: &RigidBody, _: &Collider) {
+pub fn nucleotide_de_novo(props: &ComponentProps, cell: &mut Cell) {
     let amount = props.get_input_output_amt(cell.inner.chemicals.atp);
     cell.inner.chemicals.atp -= amount.input;
     cell.inner.nucleotides += amount.output;

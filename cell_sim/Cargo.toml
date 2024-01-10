@@ -3,6 +3,10 @@ name = "cell_sim"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["parallel"]
+parallel = []
+
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
@@ -19,3 +23,4 @@ rand = { version = "0.8.5", features = ["small_rng"] }
 # Benchmarks show that in whatever case parallel is not faster than sequential. With large number of cells,
 # it hangs on pretty massive theading overhead.
 rapier2d = { version = "0.17.2", features = ["simd-stable"] }
+rayon = "1.8.0"
