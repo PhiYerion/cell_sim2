@@ -13,14 +13,12 @@ pub fn update_cells(cells: &mut [CellWrapper]) -> Vec<CellChanges> {
         });
         let velocity = match cell.inner.velocity_changed {
             true => {
-                cell.inner.velocity_changed = false;
                 Some(cell.inner.vel)
             }
             false => None,
         };
         let size = match cell.inner.size_changed {
             true => {
-                cell.inner.size_changed = false;
                 Some(cell.inner.size())
             }
             false => None,

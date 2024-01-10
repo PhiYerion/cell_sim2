@@ -4,9 +4,6 @@ mod inner;
 mod membrane;
 
 use nalgebra::{Vector2, vector};
-use rapier2d::dynamics::RigidBody;
-use rapier2d::geometry::Collider;
-
 
 use self::chemicals::Chemicals;
 use self::component::{ComponentProps, COMPONENT_COUNT, get_components};
