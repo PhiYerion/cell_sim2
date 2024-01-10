@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["parallel"]
 parallel = []
 
 [dev-dependencies]
@@ -19,8 +18,5 @@ env_logger = "0.10.1"
 log = "0.4.20"
 nalgebra = "0.32.3"
 rand = { version = "0.8.5", features = ["small_rng"] }
-# rapier2d parellel does not play well with a lot of cells (index out of bounds in interaction_groups).
-# Benchmarks show that in whatever case parallel is not faster than sequential. With large number of cells,
-# it hangs on pretty massive theading overhead.
 rapier2d = { version = "0.17.2", features = ["simd-stable"] }
 rayon = "1.8.0"

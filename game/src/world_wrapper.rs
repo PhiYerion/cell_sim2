@@ -1,4 +1,5 @@
 use bevy::sprite::Mesh2dHandle;
+use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use cell_sim::cell::Cell;
 use cell_sim::physics::World;
@@ -44,7 +45,7 @@ pub fn thousand_cells(
     mut meshes: ResMut<Assets<Mesh>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for _ in 0..10000 {
+    for _ in 0..20000 {
         let random_cell = Cell::new_random();
         world_wrapper.add_cell(
             random_cell,

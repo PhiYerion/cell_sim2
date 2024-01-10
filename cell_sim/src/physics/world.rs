@@ -5,6 +5,7 @@ use crate::cell::Cell;
 use nalgebra::Vector2;
 use rapier2d::dynamics::{RigidBody, RigidBodyBuilder, RigidBodyHandle, RigidBodySet};
 use rapier2d::geometry::{Collider, ColliderBuilder, ColliderHandle, ColliderSet, SharedShape};
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use super::cell_wrapper::CellWrapper;
 use super::physics_props::PhysicsPropsStruct;
@@ -132,9 +133,9 @@ impl World {
                 }
             });
             #[cfg(debug_assertions)] {
-                self.replication_time = start_time.elapsed();
-                self.cell_time = update_cells_time;
-                self.physics_time = update_physics_time;
+                self.replication_time += start_time.elapsed();
+                self.cell_time += update_cells_time;
+                self.physics_time += update_physics_time;
             }
         }
         #[cfg(not(feature = "parallel"))] {
@@ -154,11 +155,10 @@ impl World {
     }
 
     pub fn update_cells(cells: &mut [CellWrapper]) -> Vec<CellChanges> {
-        let collection: Vec<CellChanges> = cells.iter_mut().map(|cell| {
-            (0..20).for_each(|_| {
+        let update = |cell: &mut CellWrapper| {
+            (0..400).for_each(|_| {
                 cell.inner.run_components();
             });
-            //collider.set_shape(SharedShape::ball(cell.inner.size()));
             let velocity = match cell.inner.velocity_changed {
                 true => {
                     cell.inner.velocity_changed = false;
@@ -180,7 +180,12 @@ impl World {
                 velocity,
                 size,
             }
-        }).collect();
+        };
+
+        #[cfg(feature = "parallel")]
+        let collection: Vec<CellChanges> = cells.par_iter_mut().map(update).collect();
+        #[cfg(not(feature = "parallel"))]
+        let collection: Vec<CellChanges> = cells.iter_mut().map(update).collect();
 
         collection
     }
