@@ -10,7 +10,14 @@ pub fn flangella(props: &ComponentProps, cell: &mut Cell) {
     cell.inner.chemicals.atp -= amount.input;
     cell.modify_size(-amount.input * ATP_SIZE);
 
-    let left = rand::random::<f32>();
-    let right = 1. - left;
-    cell.vel += vector![left * amount.output, right * amount.output];
+    let (leftneg, rightneg) = (rand::random::<bool>(), rand::random::<bool>());
+    let mut left = rand::random::<f32>();
+    if leftneg {
+        left *= -1.;
+    }
+    let mut right = 1. - left;
+    if rightneg {
+        right *= -1.;
+    }
+    cell.modify_impulse(vector![left * amount.output, right * amount.output]);
 }

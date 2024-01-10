@@ -3,6 +3,7 @@ mod physics_props;
 mod world;
 mod updates;
 pub use world::World;
+pub use updates::*;
 
 #[cfg(test)]
 mod tests {

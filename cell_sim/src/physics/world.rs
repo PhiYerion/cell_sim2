@@ -30,7 +30,7 @@ pub struct World {
 pub struct CellChanges {
     pub rigid_body_handle: RigidBodyHandle,
     pub collider_handle: ColliderHandle,
-    pub velocity: Option<Vector2<f32>>,
+    pub impulse: Option<Vector2<f32>>,
     pub size: Option<f32>,
 }
 
@@ -103,9 +103,9 @@ impl World {
     }
 
     pub fn update(&mut self) {
+        let mut cell_changes: Vec<CellChanges> = Vec::with_capacity(self.cells.len());
         #[cfg(feature = "parallel")]
         {
-            let mut cell_changes: Vec<CellChanges> = Vec::with_capacity(self.cells.len());
             let mut update_cells_time = Duration::default();
             let mut update_physics_time = Duration::default();
             rayon::join(
@@ -121,36 +121,30 @@ impl World {
                 }
             );
 
-            let start_time = std::time::Instant::now();
-            cell_changes.iter().for_each(|change| {
-                if let Some(velocity) = change.velocity {
-                    let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
-                    rigid_body.set_linvel(velocity, true);
-                }
-                if let Some(size) = change.size {
-                    let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
-                    collider.set_shape(SharedShape::ball(size));
-                }
-            });
             #[cfg(debug_assertions)] {
-                self.replication_time += start_time.elapsed();
                 self.cell_time += update_cells_time;
                 self.physics_time += update_physics_time;
             }
         }
+
         #[cfg(not(feature = "parallel"))] {
-            let cell_changes = World::update_cells(self.cells.as_mut_slice());
-            cell_changes.iter().for_each(|change| {
-                if let Some(velocity) = change.velocity {
-                    let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
-                    rigid_body.set_linvel(velocity, true);
-                }
-                if let Some(size) = change.size {
-                    let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
-                    collider.set_shape(SharedShape::ball(size));
-                }
-            });
-            World::update_physics(&mut self.physics_props, &mut self.rigid_body_set, &mut self.collider_set);
+            let cell_changes = update_cells(self.cells.as_mut_slice());
+            update_physics(&mut self.physics_props, &mut self.rigid_body_set, &mut self.collider_set);
+        }
+
+        let start_time = std::time::Instant::now();
+        cell_changes.iter().for_each(|change| {
+            if let Some(impulse) = change.impulse {
+                let rigid_body = self.rigid_body_set.get_mut(change.rigid_body_handle).unwrap();
+                rigid_body.apply_impulse(impulse * 100., true);
+            }
+            if let Some(size) = change.size {
+                let collider = self.collider_set.get_mut(change.collider_handle).unwrap();
+                collider.set_shape(SharedShape::ball(size));
+            }
+        });
+        #[cfg(debug_assertions)] {
+            self.replication_time += start_time.elapsed();
         }
     }
 }

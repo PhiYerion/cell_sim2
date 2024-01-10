@@ -1,5 +1,5 @@
 use cell_sim::cell::Cell;
-use cell_sim::physics::World;
+use cell_sim::physics::{World, update_physics, update_cells};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use nalgebra::vector;
 
@@ -39,7 +39,7 @@ fn test_cells(c: &mut Criterion, rounds: usize, cells: usize) {
             });
 
             (0..black_box(rounds)).for_each(|_| {
-                World::update_cells(&mut world.cells);
+                update_cells(&mut world.cells);
             })
         })
     });
@@ -55,7 +55,7 @@ fn test_physics(c: &mut Criterion, rounds: usize, cells: usize) {
             });
 
             (0..black_box(rounds)).for_each(|_| {
-                World::update_physics(
+                update_physics(
                     &mut world.physics_props,
                     &mut world.rigid_body_set,
                     &mut world.collider_set,
@@ -63,8 +63,6 @@ fn test_physics(c: &mut Criterion, rounds: usize, cells: usize) {
             })
         })
     });
-}
-
 }
 
 criterion_group!(benches, criterion_benchmark);

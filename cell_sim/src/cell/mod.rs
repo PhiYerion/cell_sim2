@@ -17,7 +17,7 @@ pub struct Cell {
     pub membrane: Membrane,
     pub components: [Option<ComponentProps>; COMPONENT_COUNT],
     size: f32,
-    pub vel: Vector2<f32>,
+    pub impulse: Vector2<f32>,
     pub size_changed: bool,
     pub velocity_changed: bool,
 }
@@ -39,7 +39,7 @@ impl Cell {
             components,
             size,
             size_changed: false,
-            vel: vector![0.0, 0.0],
+            impulse: vector![0.0, 0.0],
             velocity_changed: false,
         }
     }
@@ -54,8 +54,8 @@ impl Cell {
         self.size * 0.001
     }
 
-    pub fn set_velocity(&mut self, vel: Vector2<f32>) {
-        self.vel = vel;
+    pub fn modify_impulse(&mut self, vel: Vector2<f32>) {
+        self.impulse += vel;
         self.velocity_changed = true;
     }
 
